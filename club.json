@@ -1,0 +1,24 @@
+{
+  "name": "Олимп",
+  "coaches": [
+    {
+      "name": "Чумаков Д.С",
+      "age": 19,
+      "phone": "1-20391-239",
+      "id": 1,
+      "specialization": "футбол",
+      "experience": 5
+    }
+  ],
+  "athletes": [],
+  "sections": [
+    {
+      "id": 1,
+      "name": "Крутой футбол",
+      "sport": "Футбол",
+      "coach_id": 1,
+      "max_size": 11,
+      "athlete_ids": []
+    }
+  ]
+}
