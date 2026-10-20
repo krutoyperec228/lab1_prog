@@ -1,3 +1,4 @@
+"""Консольный интерфейс для работы со спортивным клубом."""
 from __future__ import annotations
 from models import (Coach, Athlete, Section,
                     SportsClubError, NotFoundError,
@@ -5,15 +6,22 @@ from models import (Coach, Athlete, Section,
 from club import SportsClub
 
 
-def read_int(prompt: str) -> int:
+def read_int(prompt: str, min_value: int = 0) -> int:
+    """Читает целое число с консоли, не меньше min_value."""
     while True:
         try:
-            return int(input(prompt))
+            value = int(input(prompt))
         except ValueError:
             print("Ошибка: нужно целое число. Попробуйте ещё раз.")
+            continue
+        if value < min_value:
+            print(f"Ошибка: значение должно быть не меньше {min_value}.")
+            continue
+        return value
 
 
 def read_str(prompt: str) -> str:
+    """Читает непустую строку с консоли."""
     while True:
         s = input(prompt).strip()
         if s:
@@ -29,11 +37,12 @@ def autosave(club: SportsClub) -> None:
         print("(автосохранение выполнено)")
     except PermissionError:
         print("Предупреждение: нет доступа к файлу.")
-    except Exception as e:
+    except OSError as e:
         print(f"Предупреждение: не удалось сохранить ({e}).")
 
 
 def menu() -> None:
+    """Главное меню программы."""
     club = SportsClub("Олимп")
 
     answer = input("Загрузить предыдущие данные из файла? (y/n): ").strip().lower()
@@ -67,7 +76,7 @@ def menu() -> None:
     autosave(club)
 
     while True:
-        print(f"\nСпортивный клуб Олимп")
+        print(f"\nСпортивный клуб {club._name}")
         print("1. Добавить тренера")
         print("2. Добавить спортсмена")
         print("3. Добавить секцию")
@@ -110,20 +119,18 @@ def menu() -> None:
                 sport = read_str("вид спорта: ")
                 coach_id = read_int("id тренера: ")
                 club.get_coach(coach_id)          # проверка сразу
-                max_size = read_int("макс. участников: ")
+                max_size = read_int("макс. участников: ", min_value=1)
                 club.add_section(Section(sid, name, sport, coach_id, max_size))
                 print("Секция добавлена.")
                 autosave(club)
 
             elif choice == "4":
                 sid = read_int("id секции: ")
-                section = club.get_section(sid)   # проверка сразу
                 aid = read_int("id спортсмена: ")
-                athlete = club.get_athlete(aid)   # проверка сразу
-                section.add_athlete(aid)
-                if sid not in athlete._section_ids:
-                    athlete._section_ids.append(sid)
-                print(f"{athlete._name} записан(а) в '{section._name}'.")
+                club.enroll_athlete(sid, aid)
+                section = club.get_section(sid)
+                athlete = club.get_athlete(aid)
+                print(f"{athlete.get_name()} записан(а) в '{section.get_name()}'.")
                 autosave(club)
 
             elif choice == "5":

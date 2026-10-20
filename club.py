@@ -1,20 +1,22 @@
-from __future__ import annotations
+"""Класс SportsClub: хранение и CRUD над тренерами, спортсменами и секциями."""
 import json
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
-from typing import Any
 from models import (Coach, Athlete, Section,
-                    NotFoundError, DuplicateError, SportsClubError)
+                    NotFoundError, DuplicateError,
+                    ValidationError, SportsClubError,
+                    coach_from_dict, athlete_from_dict, section_from_dict)
 
 
 class SportsClub:
+    """Спортивный клуб: коллекции тренеров, спортсменов, секций + JSON/XML."""
+
     def __init__(self, name: str) -> None:
-        self._name: str = name
+        self._name = name
         self._coaches: dict[int, Coach] = {}
         self._athletes: dict[int, Athlete] = {}
         self._sections: dict[int, Section] = {}
 
-    # ---------- CRUD: Тренеры ----------
     def add_coach(self, coach: Coach) -> None:
         if coach._id in self._coaches:
             raise DuplicateError(f"Тренер с id={coach._id} уже есть")
@@ -34,7 +36,6 @@ class SportsClub:
                     f"сначала удалите секцию")
         del self._coaches[cid]
 
-    # ---------- CRUD: Спортсмены ----------
     def add_athlete(self, athlete: Athlete) -> None:
         if athlete._id in self._athletes:
             raise DuplicateError(f"Спортсмен с id={athlete._id} уже есть")
@@ -52,7 +53,6 @@ class SportsClub:
                 section._athlete_ids.remove(aid)
         del self._athletes[aid]
 
-    # ---------- CRUD: Секции ----------
     def add_section(self, section: Section) -> None:
         if section._id in self._sections:
             raise DuplicateError(f"Секция с id={section._id} уже есть")
@@ -72,9 +72,35 @@ class SportsClub:
                 athlete._section_ids.remove(sid)
         del self._sections[sid]
 
-    # ---------- JSON ----------
+    def enroll_athlete(self, section_id: int, athlete_id: int) -> None:
+        """Записывает спортсмена в секцию, синхронизируя обе стороны."""
+        section = self.get_section(section_id)
+        athlete = self.get_athlete(athlete_id)
+        section.add_athlete(athlete_id)
+        athlete.add_section(section_id)
+
+    def _check_links(self, coaches, athletes, sections) -> None:
+        """Проверяет, что все ссылки между сущностями корректны."""
+        for s in sections.values():
+            if s._coach_id not in coaches:
+                raise ValidationError(
+                    f"Секция #{s._id} ссылается на несуществующего "
+                    f"тренера #{s._coach_id}")
+            for aid in s._athlete_ids:
+                if aid not in athletes:
+                    raise ValidationError(
+                        f"Секция #{s._id} ссылается на несуществующего "
+                        f"спортсмена #{aid}")
+        for a in athletes.values():
+            for sid in a._section_ids:
+                if sid not in sections:
+                    raise ValidationError(
+                        f"Спортсмен #{a._id} ссылается на несуществующую "
+                        f"секцию #{sid}")
+
+    # JSON
     def save_to_json(self, path: str) -> None:
-        data: dict[str, Any] = {
+        data = {
             "name": self._name,
             "coaches": [c.to_dict() for c in self._coaches.values()],
             "athletes": [a.to_dict() for a in self._athletes.values()],
@@ -85,18 +111,25 @@ class SportsClub:
 
     def load_from_json(self, path: str) -> None:
         with open(path, "r", encoding="utf-8") as f:
-            data: dict[str, Any] = json.load(f)
-        self._name = str(data.get("name", self._name))
-        self._coaches = {int(c["id"]): Coach.from_dict(c)
-                         for c in data.get("coaches", [])}
-        self._athletes = {int(a["id"]): Athlete.from_dict(a)
-                          for a in data.get("athletes", [])}
-        self._sections = {int(s["id"]): Section.from_dict(s)
-                          for s in data.get("sections", [])}
+            data = json.load(f)
 
-    # ---------- XML ----------
+        coaches = {int(c["id"]): coach_from_dict(c)
+                   for c in data.get("coaches", [])}
+        athletes = {int(a["id"]): athlete_from_dict(a)
+                    for a in data.get("athletes", [])}
+        sections = {int(s["id"]): section_from_dict(s)
+                    for s in data.get("sections", [])}
+
+        self._check_links(coaches, athletes, sections)
+
+        self._name = str(data.get("name", self._name))
+        self._coaches = coaches
+        self._athletes = athletes
+        self._sections = sections
+
+    # XML
     def save_to_xml(self, path: str) -> None:
-        root: ET.Element = ET.Element("club", name=self._name)
+        root = ET.Element("club", name=self._name)
 
         coaches_el = ET.SubElement(root, "coaches")
         for c in self._coaches.values():
@@ -138,12 +171,11 @@ class SportsClub:
     def load_from_xml(self, path: str) -> None:
         tree = ET.parse(path)
         root = tree.getroot()
-        self._name = root.attrib.get("name", self._name)
 
-        self._coaches = {}
+        coaches = {}
         for el in root.findall("./coaches/coach"):
             cid = int(el.attrib["id"])
-            self._coaches[cid] = Coach(
+            coaches[cid] = Coach(
                 cid,
                 el.findtext("name"),
                 int(el.findtext("age")),
@@ -152,11 +184,11 @@ class SportsClub:
                 int(el.findtext("experience")),
             )
 
-        self._athletes = {}
+        athletes = {}
         for el in root.findall("./athletes/athlete"):
             aid = int(el.attrib["id"])
             ids = [int(x.text) for x in el.findall("./section_ids/id")]
-            self._athletes[aid] = Athlete(
+            athletes[aid] = Athlete(
                 aid,
                 el.findtext("name"),
                 int(el.findtext("age")),
@@ -165,11 +197,11 @@ class SportsClub:
                 ids,
             )
 
-        self._sections = {}
+        sections = {}
         for el in root.findall("./sections/section"):
             sid = int(el.attrib["id"])
             ids = [int(x.text) for x in el.findall("./athlete_ids/id")]
-            self._sections[sid] = Section(
+            sections[sid] = Section(
                 sid,
                 el.findtext("name"),
                 el.findtext("sport"),
@@ -177,3 +209,10 @@ class SportsClub:
                 int(el.findtext("max_size")),
                 ids,
             )
+
+        self._check_links(coaches, athletes, sections)
+
+        self._name = root.attrib.get("name", self._name)
+        self._coaches = coaches
+        self._athletes = athletes
+        self._sections = sections

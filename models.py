@@ -1,36 +1,38 @@
-from __future__ import annotations
+"""Модели предметной области спортивного клуба и свои исключения."""
 from typing import Any, Optional
 
 
-# ---------- СВОИ ИСКЛЮЧЕНИЯ ----------
+# СВОИ ИСКЛЮЧЕНИЯ
 class SportsClubError(Exception):
-    pass
+    """Базовое исключение для всех ошибок спортивного клуба."""
 
 
 class NotFoundError(SportsClubError):
-    pass
+    """Сущность с указанным id не найдена."""
 
 
 class DuplicateError(SportsClubError):
-    pass
+    """Попытка добавить сущность с уже существующим id."""
 
 
 class SectionFullError(SportsClubError):
-    pass
+    """Попытка записать спортсмена в заполненную секцию."""
 
 
 class ValidationError(SportsClubError):
-    pass
+    """Некорректные данные при создании объекта."""
 
 
-# ---------- МОДЕЛИ ----------
+# МОДЕЛИ
 class Person:
+    """Базовый класс человека: ФИО, возраст, телефон."""
+
     def __init__(self, name: str, age: int, phone: str) -> None:
         if not name or age <= 0 or age > 100:
             raise ValidationError("Некорректные данные человека")
-        self._name: str = name
-        self._age: int = age
-        self._phone: str = phone
+        self._name = name
+        self._age = age
+        self._phone = phone
 
     def get_info(self) -> str:
         return f"{self._name}, {self._age} лет, тел.: {self._phone}"
@@ -40,12 +42,14 @@ class Person:
 
 
 class Coach(Person):
+    """Тренер: человек с id, специализацией и стажем."""
+
     def __init__(self, cid: int, name: str, age: int, phone: str,
                  specialization: str, experience: int) -> None:
         super().__init__(name, age, phone)
-        self._id: int = cid
-        self._specialization: str = specialization
-        self._experience: int = experience
+        self._id = cid
+        self._specialization = specialization
+        self._experience = experience
 
     def get_info(self) -> str:
         return (f"[Тренер #{self._id}] {super().get_info()}, "
@@ -58,26 +62,27 @@ class Coach(Person):
                   "experience": self._experience})
         return d
 
-    @staticmethod
-    def from_dict(d: dict[str, Any]) -> "Coach":
-        return Coach(
-            int(d["id"]),
-            str(d["name"]),
-            int(d["age"]),
-            str(d["phone"]),
-            str(d["specialization"]),
-            int(d["experience"]),
-        )
-
 
 class Athlete(Person):
+    """Спортсмен: человек с id, разрядом и списком секций."""
+
     def __init__(self, aid: int, name: str, age: int, phone: str,
                  category: str,
                  section_ids: Optional[list[int]] = None) -> None:
         super().__init__(name, age, phone)
-        self._id: int = aid
-        self._category: str = category
-        self._section_ids: list[int] = list(section_ids) if section_ids else []
+        self._id = aid
+        self._category = category
+        self._section_ids = list(section_ids) if section_ids else []
+
+    def get_name(self) -> str:
+        return self._name
+
+    def has_section(self, sid: int) -> bool:
+        return sid in self._section_ids
+
+    def add_section(self, sid: int) -> None:
+        if sid not in self._section_ids:
+            self._section_ids.append(sid)
 
     def get_info(self) -> str:
         return (f"[Спортсмен #{self._id}] {super().get_info()}, "
@@ -90,28 +95,26 @@ class Athlete(Person):
                   "section_ids": self._section_ids})
         return d
 
-    @staticmethod
-    def from_dict(d: dict[str, Any]) -> "Athlete":
-        return Athlete(
-            int(d["id"]),
-            str(d["name"]),
-            int(d["age"]),
-            str(d["phone"]),
-            str(d["category"]),
-            [int(x) for x in d.get("section_ids", [])],
-        )
-
 
 class Section:
+    """Секция: название, вид спорта, тренер, лимит и список спортсменов."""
+
     def __init__(self, sid: int, name: str, sport: str, coach_id: int,
                  max_size: int,
                  athlete_ids: Optional[list[int]] = None) -> None:
-        self._id: int = sid
-        self._name: str = name
-        self._sport: str = sport
-        self._coach_id: int = coach_id
-        self._max_size: int = max_size
-        self._athlete_ids: list[int] = list(athlete_ids) if athlete_ids else []
+        if not name or not sport:
+            raise ValidationError("Название и вид спорта секции обязательны")
+        if max_size <= 0:
+            raise ValidationError("Макс. участников должно быть > 0")
+        self._id = sid
+        self._name = name
+        self._sport = sport
+        self._coach_id = coach_id
+        self._max_size = max_size
+        self._athlete_ids = list(athlete_ids) if athlete_ids else []
+
+    def get_name(self) -> str:
+        return self._name
 
     def add_athlete(self, athlete_id: int) -> None:
         if len(self._athlete_ids) >= self._max_size:
@@ -131,13 +134,39 @@ class Section:
                 "coach_id": self._coach_id, "max_size": self._max_size,
                 "athlete_ids": self._athlete_ids}
 
-    @staticmethod
-    def from_dict(d: dict[str, Any]) -> "Section":
-        return Section(
-            int(d["id"]),
-            str(d["name"]),
-            str(d["sport"]),
-            int(d["coach_id"]),
-            int(d["max_size"]),
-            [int(x) for x in d.get("athlete_ids", [])],
-        )
+
+#
+def coach_from_dict(d: dict[str, Any]) -> Coach:
+    """Создаёт тренера из словаря."""
+    return Coach(
+        int(d["id"]),
+        str(d["name"]),
+        int(d["age"]),
+        str(d["phone"]),
+        str(d["specialization"]),
+        int(d["experience"]),
+    )
+
+
+def athlete_from_dict(d: dict[str, Any]) -> Athlete:
+    """Создаёт спортсмена из словаря."""
+    return Athlete(
+        int(d["id"]),
+        str(d["name"]),
+        int(d["age"]),
+        str(d["phone"]),
+        str(d["category"]),
+        [int(x) for x in d.get("section_ids", [])],
+    )
+
+
+def section_from_dict(d: dict[str, Any]) -> Section:
+    """Создаёт секцию из словаря."""
+    return Section(
+        int(d["id"]),
+        str(d["name"]),
+        str(d["sport"]),
+        int(d["coach_id"]),
+        int(d["max_size"]),
+        [int(x) for x in d.get("athlete_ids", [])],
+    )
