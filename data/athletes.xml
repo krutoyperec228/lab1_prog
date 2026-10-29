@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<athletes>
+  <athlete id="1">
+    <name>Петров Петр Петрович</name>
+    <age>17</age>
+    <phone>+7888888888</phone>
+    <category>-</category>
+  </athlete>
+  <athlete id="2">
+    <name>Антонов Антон Антонович</name>
+    <age>18</age>
+    <phone>+7212121212</phone>
+    <category>2</category>
+  </athlete>
+</athletes>

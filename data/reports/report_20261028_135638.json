@@ -1,0 +1,15 @@
+{
+  "generated_at": "2026-10-28T13:56:38",
+  "load": [],
+  "free_slots": [],
+  "revenue": 0,
+  "age_groups": {
+    "6-9": 0,
+    "10-13": 0,
+    "14-17": 1,
+    "18+": 0
+  },
+  "athletes_without_sections": [
+    "#1 Петров Петр Петрович"
+  ]
+}

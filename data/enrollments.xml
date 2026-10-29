@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<enrollments>
+  <enrollment id="1">
+    <athlete_id>1</athlete_id>
+    <section_id>1</section_id>
+    <enrolled_at>2026-10-29</enrolled_at>
+    <status>active</status>
+    <monthly_fee>3000.0</monthly_fee>
+  </enrollment>
+  <enrollment id="2">
+    <athlete_id>2</athlete_id>
+    <section_id>2</section_id>
+    <enrolled_at>2026-10-29</enrolled_at>
+    <status>active</status>
+    <monthly_fee>1000.0</monthly_fee>
+  </enrollment>
+</enrollments>

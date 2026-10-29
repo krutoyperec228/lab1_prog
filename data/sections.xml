@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<sections>
+  <section id="1">
+    <name>Самый-крутой-футбол</name>
+    <sport>Футбол</sport>
+    <coach_id>1</coach_id>
+    <max_size>11</max_size>
+    <min_age>14</min_age>
+  </section>
+  <section id="2">
+    <name>Самый-крутой-баскетбол</name>
+    <sport>Баскетбол</sport>
+    <coach_id>2</coach_id>
+    <max_size>10</max_size>
+    <min_age>10</min_age>
+  </section>
+</sections>

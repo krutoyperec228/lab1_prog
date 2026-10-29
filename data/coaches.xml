@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<coaches>
+  <coach id="1">
+    <name>Иванов Иван Иванович</name>
+    <age>30</age>
+    <phone>+799999999</phone>
+    <specialization>футбол</specialization>
+    <experience>4</experience>
+  </coach>
+  <coach id="2">
+    <name>Васильев Василий Васильевич</name>
+    <age>40</age>
+    <phone>+76666666</phone>
+    <specialization>Баскетбол</specialization>
+    <experience>10</experience>
+  </coach>
+</coaches>
