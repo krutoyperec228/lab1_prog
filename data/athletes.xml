@@ -12,4 +12,10 @@
     <phone>+7212121212</phone>
     <category>2</category>
   </athlete>
+  <athlete id="3">
+    <name>Федоров Федор Федорович</name>
+    <age>20</age>
+    <phone>+767676767</phone>
+    <category>-</category>
+  </athlete>
 </athletes>

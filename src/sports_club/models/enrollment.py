@@ -14,18 +14,18 @@ class Enrollment:
 
     def __init__(
         self,
-        eid: int,
         athlete_id: int,
         section_id: int,
         enrolled_at: date,
         status: str = "active",
         monthly_fee: float = 0.0,
+        eid: int | None = None,
     ) -> None:
         if status not in VALID_STATUSES:
             raise ValidationError(f"Недопустимый статус: {status}")
         if monthly_fee < 0:
             raise ValidationError("Оплата не может быть отрицательной")
-        self._id = eid
+        self._id = eid if eid is not None else 0
         self._athlete_id = athlete_id
         self._section_id = section_id
         self._enrolled_at = enrolled_at
@@ -55,6 +55,9 @@ class Enrollment:
     @property
     def monthly_fee(self) -> float:
         return self._monthly_fee
+
+    def set_id(self, eid: int) -> None:
+        self._id = eid
 
     def set_status(self, status: str) -> None:
         if status not in VALID_STATUSES:

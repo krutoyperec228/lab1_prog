@@ -11,12 +11,12 @@ class Section:
 
     def __init__(
         self,
-        sid: int,
         name: str,
         sport: str,
         coach_id: int,
         max_size: int,
         min_age: int = 6,
+        sid: int | None = None,
     ) -> None:
         if not name or not name.strip():
             raise ValidationError("Название секции обязательно")
@@ -26,7 +26,7 @@ class Section:
             raise ValidationError("Макс. участников должно быть > 0")
         if min_age < 0:
             raise ValidationError("Минимальный возраст не может быть < 0")
-        self._id = sid
+        self._id = sid if sid is not None else 0
         self._name = name.strip()
         self._sport = sport.strip()
         self._coach_id = coach_id
@@ -56,6 +56,9 @@ class Section:
     @property
     def min_age(self) -> int:
         return self._min_age
+
+    def set_id(self, sid: int) -> None:
+        self._id = sid
 
     def get_info(self) -> str:
         return (

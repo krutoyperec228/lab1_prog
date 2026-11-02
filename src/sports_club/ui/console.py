@@ -9,7 +9,6 @@ from sports_club.core.exceptions import (
     StorageError,
     ValidationError,
 )
-from sports_club.models.enrollment import Enrollment
 from sports_club.models.person import Athlete, Coach
 from sports_club.models.section import Section
 from sports_club.services.club_service import ClubService
@@ -32,10 +31,11 @@ def read_int(prompt: str, min_value: int = 0) -> int:
 
 def read_str(prompt: str) -> str:
     while True:
-        s = input(prompt).strip()
-        if s:
-            return s
-        print("Поле не может быть пустым.")
+        raw = input(prompt)
+        clean = raw.encode("utf-8", "ignore").decode("utf-8").strip()
+        if clean:
+            return clean
+        print("Поле не может быть пустым или содержит недопустимые символы.")
 
 
 def read_float(prompt: str) -> float:
@@ -86,7 +86,7 @@ class ConsoleApp:
                 print(f"Ошибка клуба: {e}")
             except (ValueError, KeyError, TypeError) as e:
                 print(f"Некорректные данные: {e}")
-            except Exception as e:  # на случай совсем непредвиденного
+            except Exception as e:
                 print(f"Непредвиденная ошибка: {e}")
 
     @staticmethod
@@ -185,41 +185,38 @@ class ConsoleApp:
         return True
 
     def _add_coach(self) -> None:
-        cid = read_int("id тренера: ")
         name = read_str("ФИО: ")
         age = read_int("возраст: ", min_value=1)
         phone = read_str("телефон: ")
         spec = read_str("специализация: ")
         exp = read_int("стаж: ")
-        self._club.add_coach(Coach(cid, name, age, phone, spec, exp))
-        print("Тренер добавлен.")
+        coach = self._club.add_coach(Coach(name, age, phone, spec, exp))
+        print(f"Тренер добавлен (id={coach.id}).")
 
     def _add_athlete(self) -> None:
-        aid = read_int("id спортсмена: ")
         name = read_str("ФИО: ")
         age = read_int("возраст: ", min_value=1)
         phone = read_str("телефон: ")
         cat = read_str("разряд: ")
-        self._club.add_athlete(Athlete(aid, name, age, phone, cat))
-        print("Спортсмен добавлен.")
+        athlete = self._club.add_athlete(Athlete(name, age, phone, cat))
+        print(f"Спортсмен добавлен (id={athlete.id}).")
 
     def _add_section(self) -> None:
-        sid = read_int("id секции: ")
         name = read_str("название секции: ")
         sport = read_str("вид спорта: ")
         coach_id = read_int("id тренера: ")
         max_size = read_int("макс. участников: ", min_value=1)
         min_age = read_int("мин. возраст: ", min_value=0)
-        self._club.add_section(
-            Section(sid, name, sport, coach_id, max_size, min_age)
+        section = self._club.add_section(
+            Section(name, sport, coach_id, max_size, min_age)
         )
-        print("Секция добавлена.")
+        print(f"Секция добавлена (id={section.id}).")
 
     def _enroll(self) -> None:
         aid = read_int("id спортсмена: ")
         sid = read_int("id секции: ")
         fee = read_float("абонплата в месяц: ")
-        e: Enrollment = self._enrollments.enroll(aid, sid, fee)
+        e = self._enrollments.enroll(aid, sid, fee)
         section = self._club.get_section(sid)
         athlete = self._club.get_athlete(aid)
         print(

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from sports_club.core.exceptions import (
     SportsClubError,
-    ValidationError,
+    ValidationError
 )
 from sports_club.models.person import Athlete, Coach
 from sports_club.models.section import Section
@@ -25,8 +25,9 @@ class ClubService:
         self._athletes = athletes
         self._sections = sections
 
-    def add_coach(self, coach: Coach) -> None:
+    def add_coach(self, coach: Coach) -> Coach:
         self._coaches.add(coach)
+        return coach
 
     def get_coach(self, cid: int) -> Coach:
         return self._coaches.get(cid)
@@ -44,8 +45,9 @@ class ClubService:
                 )
         self._coaches.delete(cid)
 
-    def add_athlete(self, athlete: Athlete) -> None:
+    def add_athlete(self, athlete: Athlete) -> Athlete:
         self._athletes.add(athlete)
+        return athlete
 
     def get_athlete(self, aid: int) -> Athlete:
         return self._athletes.get(aid)
@@ -57,9 +59,10 @@ class ClubService:
         self._athletes.get(aid)
         self._athletes.delete(aid)
 
-    def add_section(self, section: Section) -> None:
+    def add_section(self, section: Section) -> Section:
         self._coaches.get(section.coach_id)
         self._sections.add(section)
+        return section
 
     def get_section(self, sid: int) -> Section:
         return self._sections.get(sid)
@@ -72,10 +75,8 @@ class ClubService:
 
     def check_links(self) -> None:
         coaches = {c.id for c in self._coaches.list()}
-        athletes = {a.id for a in self._athletes.list()}
         for s in self._sections.list():
             if s.coach_id not in coaches:
                 raise ValidationError(
                     f"Секция #{s.id} ссылается на тренера #{s.coach_id}"
                 )
-        _ = athletes

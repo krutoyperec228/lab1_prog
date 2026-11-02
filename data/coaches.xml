@@ -14,4 +14,11 @@
     <specialization>Баскетбол</specialization>
     <experience>10</experience>
   </coach>
+  <coach id="3">
+    <name>Валерьев Валерий ВАаолерьевич</name>
+    <age>60</age>
+    <phone>+7222222222</phone>
+    <specialization>бокс</specialization>
+    <experience>20</experience>
+  </coach>
 </coaches>

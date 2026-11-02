@@ -14,5 +14,13 @@
     "id": 2,
     "specialization": "Баскетбол",
     "experience": 10
+  },
+  {
+    "name": "Валерьев Валерий ВАаолерьевич",
+    "age": 60,
+    "phone": "+7222222222",
+    "id": 3,
+    "specialization": "бокс",
+    "experience": 20
   }
 ]

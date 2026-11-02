@@ -42,17 +42,17 @@ class Coach(Person):
 
     def __init__(
         self,
-        cid: int,
         name: str,
         age: int,
         phone: str,
         specialization: str,
         experience: int,
+        cid: int | None = None,
     ) -> None:
         super().__init__(name, age, phone)
         if experience < 0:
             raise ValidationError("Стаж не может быть отрицательным")
-        self._id = cid
+        self._id = cid if cid is not None else 0
         self._specialization = specialization
         self._experience = experience
 
@@ -67,6 +67,10 @@ class Coach(Person):
     @property
     def experience(self) -> int:
         return self._experience
+
+    def set_id(self, cid: int) -> None:
+        """Присваивает id (вызывается репозиторием)."""
+        self._id = cid
 
     def get_info(self) -> str:
         return (
@@ -91,14 +95,14 @@ class Athlete(Person):
 
     def __init__(
         self,
-        aid: int,
         name: str,
         age: int,
         phone: str,
         category: str,
+        aid: int | None = None,
     ) -> None:
         super().__init__(name, age, phone)
-        self._id = aid
+        self._id = aid if aid is not None else 0
         self._category = category
 
     @property
@@ -108,6 +112,9 @@ class Athlete(Person):
     @property
     def category(self) -> str:
         return self._category
+
+    def set_id(self, aid: int) -> None:
+        self._id = aid
 
     def get_info(self) -> str:
         return (

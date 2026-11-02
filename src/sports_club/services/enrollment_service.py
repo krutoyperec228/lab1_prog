@@ -59,7 +59,6 @@ class EnrollmentService:
             )
 
         enrollment = Enrollment(
-            eid=self._enrollments.next_id(),
             athlete_id=athlete_id,
             section_id=section_id,
             enrolled_at=date.today(),
@@ -85,7 +84,6 @@ class EnrollmentService:
         self._enrollments.delete(enrollment_id)
 
     def athlete_sections(self, athlete_id: int) -> list[str]:
-        """Названия секций, куда записан спортсмен."""
         self._athletes.get(athlete_id)
         result: list[str] = []
         for e in self._enrollments.list():
